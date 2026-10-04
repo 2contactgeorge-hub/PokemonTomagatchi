@@ -1,0 +1,16 @@
+{
+  "name": "Pok\u00e9Pal HG ROM Edition v10",
+  "short_name": "Pok\u00e9Pal HG",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1c3155",
+  "theme_color": "#c92024",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

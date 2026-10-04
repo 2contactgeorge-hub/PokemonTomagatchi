@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#cf2323">
+<title>PokéPal HG — ROM Edition v10</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+<section id="setup" class="card setup">
+  <h1>Choose your starter</h1>
+  <div class="small">All visible art is extracted from your HeartGold ROM. Choose one of the classic starters and begin your field guide.</div>
+  <div id="starterGrid" class="starter-grid">
+    <button class="starter" data-species="Charmander" type="button"><img class="pixel" src="assets/pokemon/charmander/front_0.png" alt="Charmander"><b>Charmander</b></button>
+    <button class="starter" data-species="Bulbasaur" type="button"><img class="pixel" src="assets/pokemon/bulbasaur/front_0.png" alt="Bulbasaur"><b>Bulbasaur</b></button>
+    <button class="starter" data-species="Squirtle" type="button"><img class="pixel" src="assets/pokemon/squirtle/front_0.png" alt="Squirtle"><b>Squirtle</b></button>
+    <div id="pikaLock" class="starter locked"><div class="silhouette">?</div><div style="flex:1"><b>???</b><div id="pikaWait" class="small">An unusual presence is nearby…</div><div class="unlock-progress"><div id="unlockBar"></div></div></div></div>
+    <button id="pikaCard" class="starter unlock hidden" data-species="Pikachu" type="button"><img class="pixel" src="assets/pokemon/pikachu/front_0.png" alt="Pikachu"><div><b>Pikachu</b><div class="small">Secret starter unlocked!</div></div></button>
+  </div>
+  <label>Nickname<input id="nickname" maxlength="16" placeholder="e.g. Mitch"></label>
+  <div class="mortality-notice"><b>Permanent mortality is enabled.</b> Hunger, neglect, and battles can permanently end a Pokémon's run.</div>
+  <button id="startBtn" class="btn primary" style="width:100%" disabled>Choose a Pokémon first</button>
+</section>
+
+<main id="game" class="hidden">
+  <div class="topbar"><div><div class="brand">PokéPal HG</div><div class="small">ROM Edition v10 · World Cycle</div></div><div class="top-chips"><span id="dayPhase" class="chip phase-chip">DAY</span><span id="liveClock" class="chip clock-chip">--:--</span><span id="moneyText" class="chip">₽0</span><span id="saveChip" class="chip">Saved</span></div></div>
+  <div class="name-row"><div><div id="petName" class="petname"></div><div id="levelText" class="small"></div></div><div class="rightmeta"><div id="moodText" class="small"></div><div class="small">Detailed HG battle sprite</div></div></div>
+
+  <section id="homeScene" class="room-shell">
+    <div id="room" class="room room-composite">
+      <button id="tvImage" class="room-hotspot tv-hotspot" type="button" aria-label="Watch a Training Disc on the television"></button>
+      <button id="bedHotspot" class="room-hotspot bed-hotspot" type="button" aria-label="Send your Pokémon to bed"></button>
+      <div class="tv-screen-light" aria-hidden="true"></div>
+      <div class="room-tip">Tap the floor to call your Pokémon · tap the TV for discs · tap the bed to sleep</div>
+      <div id="homePet" class="pet" role="button" tabindex="0" aria-label="Pet your Pokémon"><img id="homeSprite" alt=""><span id="homeAccessory" class="accessory-overlay" aria-hidden="true"></span><div id="bubble" class="bubble"></div></div>
+      <div id="homeFx" class="fx"></div>
+    </div>
+  </section>
+
+  <section id="fieldScene" class="room-shell hidden">
+    <div id="field" class="field route-field">
+      <div class="route-title">ROUTE 29 · TOWN PATH</div>
+      <div id="routeMessage" class="route-message">Wild Pokémon can appear while travelling.</div>
+      <div class="route-building-label center-label">POKé CENTER</div>
+      <div class="route-building-label mart-label">POKé MART</div>
+      <div id="fieldPet" class="pet route-pet"><img id="fieldSprite" alt=""><span id="fieldAccessory" class="accessory-overlay" aria-hidden="true"></span></div>
+      <div class="field-controls route-controls">
+        <button id="forageBtn" class="btn primary">🌿 Search Grass</button>
+        <button id="fieldCenterBtn" class="btn">🏥 Walk to Center</button>
+        <button id="fieldMartBtn" class="btn">🏪 Walk to Mart</button>
+        <button id="homeBtn" class="btn">🏠 Go Home</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="martScene" class="room-shell hidden">
+    <div id="martRoom" class="mart-room mart-composite">
+      <div class="location-kicker">TOWN POKé MART</div>
+      <div id="martPet" class="pet mart-pet"><img id="martSprite" alt=""><span id="martAccessory" class="accessory-overlay" aria-hidden="true"></span></div>
+      <div class="mart-scene-controls"><button id="shopClerkBtn" class="btn primary" type="button">🛍️ Talk to Clerk</button><button id="leaveMartBtn" class="btn" type="button">🚪 Return to Route</button></div>
+    </div>
+  </section>
+
+  <section id="centerScene" class="room-shell hidden">
+    <div id="centerRoom" class="center-room center-composite">
+      <div class="location-kicker center-kicker">TOWN POKéMON CENTER</div>
+      <div class="heal-machine-glow" aria-hidden="true"></div>
+      <div id="centerPet" class="pet center-pet"><img id="centerSprite" alt=""><span id="centerAccessory" class="accessory-overlay" aria-hidden="true"></span></div>
+      <div class="center-scene-controls"><button id="healCenterBtn" class="btn primary" type="button">💗 Heal & Rest</button><button id="leaveCenterBtn" class="btn" type="button">🚪 Return to Route</button></div>
+    </div>
+  </section>
+
+  <section id="statsCard" class="card"><div id="stats" class="stats"></div></section>
+  <section id="movesCard" class="card"><div class="card-title-row"><b>Moves</b><span id="moveLevelHint" class="small"></span></div><div id="discStatus" class="disc-status"></div><div id="moveList" class="move-list"></div></section>
+  <section id="chatCard" class="card"><div class="card-title-row"><b>Companion Speech</b><button id="openChatBtn" class="btn" type="button" style="min-height:38px;padding:6px 10px">💬 Talk</button></div><div id="chatSummary" class="chat-summary"></div></section>
+  <section id="actionsCard" class="card">
+    <div class="actions">
+      <button class="btn" data-act="feed">🍎 Feed</button><button class="btn" data-act="pet">❤️ Pet</button><button class="btn" data-act="talk">💬 Talk</button><button class="btn" data-act="clean">🧼 Clean</button>
+      <button class="btn" data-act="sleep">🌙 Sleep / Wake</button><button class="btn" data-act="play">🎾 Play</button><button class="btn" data-act="heal">💊 Heal</button>
+      <button class="btn wide" data-act="tv">📀 Watch TV / Training Disc</button>
+      <button class="btn primary wide" data-act="explore">🗺️ Leave Home / Explore</button>
+      <button class="btn" data-act="center">🏥 Walk to Poké Center</button><button class="btn" data-act="mart">🏪 Walk to Poké Mart</button>
+      <button id="useStoneBtn" class="btn wide hidden" data-act="evolve-item">⚡ Use Thunder Stone</button>
+    </div>
+    <div class="asset-note"><b>Training loop:</b> battles earn XP. At certain levels you receive a Training Disc; your Pokémon must watch it on the TV at home before the move can be learned.</div>
+  </section>
+  <section id="foodCard" class="card"><b>Food bag</b><div id="foodGrid" class="foodgrid"></div></section>
+  <section id="journalCard" class="card"><b>Journal</b><div id="log" class="log" style="margin-top:6px"></div></section>
+  <section id="settingsCard" class="card"><b>Settings</b><div class="permadeath-row">☠️ <strong>Mortality: Permanent</strong><span>Cannot be disabled</span></div><button id="rename" class="btn" style="width:100%;margin:5px 0">Rename Pokémon</button><button id="reset" class="btn danger" style="width:100%;margin-top:4px">Reset save</button><div class="small" style="margin-top:9px">If Fullness reaches zero, health begins falling. Long periods without food can permanently kill your Pokémon, even while the app is closed.</div></section>
+</main>
+
+<section id="death" class="death-screen hidden">
+  <div class="death-shell">
+    <div class="death-kicker">IN MEMORY OF</div>
+    <img id="deathSprite" class="death-pokemon pixel" alt="Your Pokémon memorial portrait">
+    <h1 id="deathTitle"></h1>
+    <div id="deathCause" class="death-cause"></div>
+    <p id="deathText" class="small"></p>
+    <div id="deathRecord" class="death-record"></div>
+    <div class="death-permanent">This Pokémon is permanently gone. Medicine and the Poké Mart cannot bring it back.</div>
+    <button id="funeral" class="btn primary" style="width:100%">Hold Funeral</button>
+    <button id="newPet" class="btn" style="width:100%;margin-top:8px">Choose a New Starter</button>
+  </div>
+</section>
+
+<div id="battleBack" class="battle-back hidden" role="dialog" aria-modal="true" aria-label="Pokémon battle">
+  <section class="battle">
+    <div class="battle-stage">
+      <div class="battle-weather" id="battleWeather">ROUTE BATTLE</div>
+      <div class="battlebox wildbox"><div><span id="wildName"></span> <span id="wildLevel"></span></div><div class="hpbar"><div id="wildHpBar"></div></div></div>
+      <img id="wildSprite" class="bmon wildmon" alt="Wild Pokémon">
+      <img id="playerBattleSprite" class="bmon playermon" alt="Your Pokémon">
+      <div class="battlebox playerbox"><div><span id="battlePetName"></span> <span id="battlePetLevel"></span></div><div class="hpbar"><div id="playerHpBar"></div></div></div>
+    </div>
+    <div id="battleMessage" class="battle-message">A wild Pokémon appeared!</div>
+    <div class="battle-actions">
+      <button id="move1" class="btn primary battle-move">Move 1</button><button id="move2" class="btn battle-move">Move 2</button>
+      <button id="move3" class="btn battle-move">Move 3</button><button id="move4" class="btn battle-move">Move 4</button>
+      <button id="berryBattle" class="btn">🫐 Oran Berry</button><button id="guardBattle" class="btn">🛡️ Guard</button>
+      <button id="runBattle" class="btn run">Run</button>
+    </div>
+  </section>
+</div>
+</div>
+
+<div id="chatBack" class="modal-back hidden" role="dialog" aria-modal="true" aria-label="Talk to your Pokémon">
+  <section class="modal-card chat-card">
+    <div class="modal-head"><div><div id="chatTitle" class="mart-sign">COMPANION LINK</div><div id="chatSubtitle" class="small">Your Pokémon understands more as your bond grows.</div></div><button id="closeChat" class="round-close" type="button" aria-label="Close conversation">×</button></div>
+    <div id="chatWindow" class="chat-window" aria-live="polite"></div>
+    <div class="quick-talk" aria-label="Quick encouragements">
+      <button class="btn" type="button" data-quick-talk="You can do it!">You can do it!</button>
+      <button class="btn" type="button" data-quick-talk="I'm proud of you.">I'm proud of you</button>
+      <button class="btn" type="button" data-quick-talk="Good job!">Good job!</button>
+      <button class="btn" type="button" data-quick-talk="We're in this together.">We're together</button>
+    </div>
+    <form id="chatForm" class="chat-form">
+      <input id="chatInput" maxlength="180" autocomplete="off" placeholder="Say something to your Pokémon…" aria-label="Message your Pokémon">
+      <button class="btn primary" type="submit">Send</button>
+    </form>
+    <div id="chatHint" class="small" style="margin-top:9px"></div>
+  </section>
+</div>
+<div id="martBack" class="modal-back hidden" role="dialog" aria-modal="true" aria-label="Poké Mart">
+  <section class="modal-card mart-card">
+    <div class="modal-head"><div><div class="mart-sign">POKé MART</div><div class="small">Supplies and accessories. Owned accessories can be equipped here.</div></div><button id="closeMart" class="round-close" type="button" aria-label="Close Poké Mart">×</button></div>
+    <div id="martMoney" class="mart-money">₽0</div>
+    <div id="martItems" class="mart-items"></div>
+  </section>
+</div>
+<div id="discBack" class="modal-back hidden" role="dialog" aria-modal="true" aria-label="Training discs">
+  <section class="modal-card disc-card">
+    <div class="modal-head"><div><div class="mart-sign">TRAINING DISCS</div><div class="small">Your Pokémon learns these only by watching the TV.</div></div><button id="closeDiscs" class="round-close" type="button" aria-label="Close training discs">×</button></div>
+    <div id="discList" class="disc-list"></div>
+  </section>
+</div>
+<div id="moveLearnBack" class="modal-back hidden" role="dialog" aria-modal="true" aria-label="Learn a new move">
+  <section class="modal-card learn-card">
+    <div class="move-learn-badge">TRAINING DISC</div>
+    <h2 id="moveLearnTitle">A new move!</h2>
+    <p id="moveLearnText" class="small"></p>
+    <div id="moveChoices" class="move-choices"></div>
+    <button id="skipMove" class="btn danger" type="button" style="width:100%;margin-top:9px">Keep disc for later</button>
+  </section>
+</div>
+
+<div id="evolutionBack" class="modal-back hidden" role="dialog" aria-modal="true" aria-label="Evolution">
+  <section class="modal-card evolution-card">
+    <div class="move-learn-badge">EVOLUTION</div>
+    <img id="evolutionSprite" class="evolution-sprite pixel" alt="Evolution preview">
+    <h2 id="evolutionTitle">Something is happening!</h2>
+    <p id="evolutionText" class="small"></p>
+    <div class="evolution-actions"><button id="evolveNow" class="btn primary" type="button">Evolve</button><button id="evolveLater" class="btn" type="button">Not now</button></div>
+  </section>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
